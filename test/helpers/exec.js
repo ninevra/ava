@@ -25,6 +25,16 @@ const compareStatObjects = (a, b) => {
 	return 1;
 };
 
+const NO_FORWARD_PREFIX = Buffer.from('🤗', 'utf8');
+
+const forwardErrorOutput = async from => {
+	for await (const message of from) {
+		if (NO_FORWARD_PREFIX.compare(message, 0, 4) !== 0) {
+			process.stderr.write(message);
+		}
+	}
+};
+
 exports.fixture = async (...args) => {
 	const cwd = path.join(path.dirname(test.meta.file), 'fixtures');
 	const running = execa.node(cliPath, args, {
@@ -38,19 +48,25 @@ exports.fixture = async (...args) => {
 	// Besides buffering stderr, if this environment variable is set, also pipe
 	// to stderr. This can be useful when debugging the tests.
 	if (process.env.DEBUG_TEST_AVA) {
-		running.stderr.pipe(process.stderr);
+		// Running.stderr.pipe(process.stderr);
+		forwardErrorOutput(running.stderr);
 	}
 
 	const errors = new WeakMap();
+	const logs = new WeakMap();
 	const stats = {
 		failed: [],
 		failedHooks: [],
 		passed: [],
+		sharedWorkerErrors: [],
 		skipped: [],
 		uncaughtExceptions: [],
 		unsavedSnapshots: [],
 		getError(statObject) {
 			return errors.get(statObject);
+		},
+		getLogs(statObject) {
+			return logs.get(statObject);
 		}
 	};
 
@@ -77,6 +93,12 @@ exports.fixture = async (...args) => {
 				break;
 			}
 
+			case 'shared-worker-error': {
+				const {message, name, stack} = statusEvent.err;
+				stats.sharedWorkerErrors.push({message, name, stack});
+				break;
+			}
+
 			case 'snapshot-error': {
 				const {testFile} = statusEvent;
 				stats.unsavedSnapshots.push({file: normalizePath(cwd, testFile)});
@@ -85,7 +107,9 @@ exports.fixture = async (...args) => {
 
 			case 'test-passed': {
 				const {title, testFile} = statusEvent;
-				stats.passed.push({title, file: normalizePath(cwd, testFile)});
+				const statObject = {title, file: normalizePath(cwd, testFile)};
+				stats.passed.push(statObject);
+				logs.set(statObject, statusEvent.logs);
 				break;
 			}
 
