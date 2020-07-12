@@ -1,46 +1,29 @@
 export namespace SharedWorker {
-	export const enum ProtocolIdentifier {
-		Experimental = 'experimental'
-	}
+	export type ProtocolIdentifier = 'experimental';
 
-	export type TestWorker<Data = unknown> = {
-		readonly id: string;
-		readonly file: string;
-		defer: <ReleaseFn extends () => void> (fn: ReleaseFn) => ReleaseFn;
-		publish: (data: Data) => PublishedMessage<Data>;
-		subscribe: () => AsyncIterableIterator<ReceivedMessage<Data>>;
+	/* eslint-disable @typescript-eslint/method-signature-style */
+	export type FactoryOptions = {
+		negotiateProtocol <Data = unknown>(supported: readonly ['experimental']): Experimental.Protocol<Data>;
+		// Add overloads for additional protocols.
 	};
+	/* eslint-enable @typescript-eslint/method-signature-style */
 
-	export type Factory = (options: {
-		readonly negotiateProtocol: <Data = unknown>(supported: readonly ProtocolIdentifier[]) => Protocol<Data>;
-	}) => void;
+	export type Factory = (options: FactoryOptions) => void;
 
-	export type Protocol<Data = unknown> = {
-		readonly initialData: Data;
-		readonly protocol: ProtocolIdentifier.Experimental;
-		broadcast: (data: Data) => BroadcastMessage<Data>;
-		subscribe: () => AsyncIterableIterator<ReceivedMessage<Data>>;
-		testWorkers: () => AsyncIterableIterator<TestWorker<Data>>;
-	};
+	export namespace Experimental {
+		export type Protocol<Data = unknown> = {
+			readonly initialData: Data;
+			readonly protocol: 'experimental';
+			broadcast: (data: Data) => BroadcastMessage<Data>;
+			subscribe: () => AsyncIterableIterator<ReceivedMessage<Data>>;
+			testWorkers: () => AsyncIterableIterator<TestWorker<Data>>;
+		};
 
-	export type BroadcastMessage<Data = unknown> = {
-		readonly id: string;
-		replies: () => AsyncIterableIterator<ReceivedMessage<Data>>;
-	};
+		export type BroadcastMessage<Data = unknown> = {
+			readonly id: string;
+			replies: () => AsyncIterableIterator<ReceivedMessage<Data>>;
+		};
 
-	export type PublishedMessage<Data = unknown> = {
-		readonly id: string;
-		replies: () => AsyncIterableIterator<ReceivedMessage<Data>>;
-	};
-
-	export type ReceivedMessage<Data = unknown> = {
-		readonly data: Data;
-		readonly id: string;
-		readonly testWorker: TestWorker;
-		reply: (data: Data) => PublishedMessage<Data>;
-	};
-
-	export namespace Plugin {
 		export type PublishedMessage<Data = unknown> = {
 			readonly id: string;
 			replies: () => AsyncIterableIterator<ReceivedMessage<Data>>;
@@ -49,24 +32,49 @@ export namespace SharedWorker {
 		export type ReceivedMessage<Data = unknown> = {
 			readonly data: Data;
 			readonly id: string;
+			readonly testWorker: TestWorker;
 			reply: (data: Data) => PublishedMessage<Data>;
 		};
 
-		export type Protocol<Data = unknown> = {
-			readonly available: Promise<void>;
-			readonly currentlyAvailable: boolean;
-			readonly protocol: ProtocolIdentifier.Experimental;
+		export type TestWorker<Data = unknown> = {
+			readonly id: string;
+			readonly file: string;
+			defer: <ReleaseFn extends () => void> (fn: ReleaseFn) => ReleaseFn;
 			publish: (data: Data) => PublishedMessage<Data>;
 			subscribe: () => AsyncIterableIterator<ReceivedMessage<Data>>;
 		};
 	}
+
+	export namespace Plugin {
+		export type RegistrationOptions<Identifier extends ProtocolIdentifier, Data = unknown> = {
+			readonly filename: string;
+			readonly initialData?: Data;
+			readonly supportedProtocols: readonly Identifier[];
+			readonly teardown?: () => void;
+		};
+
+		export namespace Experimental {
+			export type Protocol<Data = unknown> = {
+				readonly available: Promise<void>;
+				readonly currentlyAvailable: boolean;
+				readonly protocol: 'experimental';
+				publish: (data: Data) => PublishedMessage<Data>;
+				subscribe: () => AsyncIterableIterator<ReceivedMessage<Data>>;
+			};
+
+			export type PublishedMessage<Data = unknown> = {
+				readonly id: string;
+				replies: () => AsyncIterableIterator<ReceivedMessage<Data>>;
+			};
+
+			export type ReceivedMessage<Data = unknown> = {
+				readonly data: Data;
+				readonly id: string;
+				reply: (data: Data) => PublishedMessage<Data>;
+			};
+		}
+	}
 }
 
-export type SharedWorkerRegistrationOptions<Data = unknown> = {
-	readonly filename: string;
-	readonly initialData?: Data;
-	readonly supportedProtocols: readonly SharedWorker.ProtocolIdentifier[];
-	readonly teardown?: () => void;
-};
-
-export function registerSharedWorker<Data = unknown> (options: SharedWorkerRegistrationOptions<Data>): SharedWorker.Plugin.Protocol<Data>;
+export function registerSharedWorker<Data = unknown> (options: SharedWorker.Plugin.RegistrationOptions<'experimental', Data>): SharedWorker.Plugin.Experimental.Protocol<Data>;
+// Add overloads for additional protocols.
