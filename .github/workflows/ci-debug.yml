@@ -1,0 +1,28 @@
+name: Debug Install and test AVA
+on: workflow_dispatch
+jobs:
+  nodejs:
+    name: Node.js
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Enable symlinks
+        if: matrix.os == 'windows-latest'
+        run: |
+          git config core.symlinks true
+          git reset --hard
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ^14.15
+      - name: Upgrade npm
+        run: npm install --global npm@7
+      - run: npm ci --no-audit
+      - run: npm run cover
+      - uses: mdelillo/ssh-server-action@v1
+        with:
+          ngrok-authtoken: ${{ secrets.NGROK_TOKEN }}
+          ssh-public-key: ${{ secrets.DEBUG_SSH_PUBLIC_KEY }}
