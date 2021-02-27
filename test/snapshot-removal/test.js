@@ -114,7 +114,7 @@ test('snapshots removed if --match selects all tests', macro, {
 	}
 });
 
-test('snapshots remain if tests selected by line numbers', macro, {
+test.skip('snapshots remain if tests selected by line numbers', macro, {
 	cwd: exec.cwd('removal'),
 	cli: ['test.js:10-17', '--update-snapshots'],
 	remove: false,
