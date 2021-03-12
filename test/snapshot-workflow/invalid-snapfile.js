@@ -3,9 +3,10 @@ const exec = require('../helpers/exec');
 const fs = require('fs').promises;
 const path = require('path');
 const {withTemporaryFixture} = require('../helpers/with-temporary-fixture');
+const {withCPU} = require('../helpers/with-cpu');
 
-test.serial('With invalid .snap file and --update-snapshots, skipped snaps are omitted', async t => {
-	await withTemporaryFixture(exec.cwd('invalid-snapfile'), async cwd => {
+test('With invalid .snap file and --update-snapshots, skipped snaps are omitted', async t => {
+	await withCPU(() => withTemporaryFixture(exec.cwd('invalid-snapfile'), async cwd => {
 		const env = {AVA_FORCE_CI: 'not-ci'};
 		const snapPath = path.join(cwd, 'test.js.snap');
 		const reportPath = path.join(cwd, 'test.js.md');
@@ -19,5 +20,5 @@ test.serial('With invalid .snap file and --update-snapshots, skipped snaps are o
 		t.snapshot(result.stats.passed, 'passed tests');
 		t.snapshot(result.stats.failed, 'failed tests');
 		t.snapshot(result.stats.skipped, 'skipped tests');
-	});
+	}));
 });

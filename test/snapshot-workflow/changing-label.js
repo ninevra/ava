@@ -2,7 +2,7 @@ const test = require('@ava/test');
 const exec = require('../helpers/exec');
 const {beforeAndAfter} = require('./helpers/macros');
 
-test.serial(
+test(
 	'Changing a snapshot\'s label does not change the .snap or .md',
 	beforeAndAfter,
 	{
@@ -11,7 +11,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update-snapshots, changing a snapshot\'s label updates the .snap and .md',
 	beforeAndAfter,
 	{

@@ -2,7 +2,7 @@ const test = require('@ava/test');
 const exec = require('../helpers/exec');
 const {beforeAndAfter} = require('./helpers/macros');
 
-test.serial(
+test(
 	'With --update-snapshots, skipping snapshots preserves their data',
 	beforeAndAfter,
 	{
@@ -12,7 +12,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update-snapshots and t.snapshot.skip(), other snapshots are updated',
 	beforeAndAfter,
 	{
@@ -22,7 +22,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update-snapshots, skipping tests preserves their data',
 	beforeAndAfter,
 	{
@@ -32,7 +32,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update snapshots and test.skip(), other tests\' snapshots are updated',
 	beforeAndAfter,
 	{
@@ -42,7 +42,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update-snapshots and --match, only selected tests are updated',
 	beforeAndAfter,
 	{
@@ -52,7 +52,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update-snapshots and line number selection, only selected tests are updated',
 	beforeAndAfter,
 	{

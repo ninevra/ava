@@ -2,7 +2,7 @@ const test = require('@ava/test');
 const exec = require('../helpers/exec');
 const {beforeAndAfter} = require('./helpers/macros');
 
-test.serial(
+test(
 	'Removing a snapshot assertion retains its data',
 	beforeAndAfter,
 	{
@@ -11,7 +11,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'With --update-snapshots, removing a snapshot assertion removes its data',
 	beforeAndAfter,
 	{

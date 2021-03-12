@@ -5,9 +5,10 @@ const path = require('path');
 const fs = require('fs').promises;
 const {beforeAndAfter} = require('./helpers/macros');
 const {withTemporaryFixture} = require('../helpers/with-temporary-fixture');
+const {withCPU} = require('../helpers/with-cpu');
 
-test.serial('First run generates a .snap and a .md', async t => {
-	await withTemporaryFixture(exec.cwd('first-run'), async cwd => {
+test('First run generates a .snap and a .md', async t => {
+	await withCPU(() => withTemporaryFixture(exec.cwd('first-run'), async cwd => {
 		const env = {
 			AVA_FORCE_CI: 'not-ci'
 		};
@@ -22,7 +23,7 @@ test.serial('First run generates a .snap and a .md', async t => {
 	});
 });
 
-test.serial(
+test(
 	'Adding more snapshots to a test adds them to the .snap and .md',
 	beforeAndAfter,
 	{
@@ -31,7 +32,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'Adding a test with snapshots adds them to the .snap and .md',
 	beforeAndAfter,
 	{
@@ -40,7 +41,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'Changing a test\'s title adds a new block, puts the old block at the end',
 	beforeAndAfter,
 	{
@@ -49,7 +50,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'Adding skipped snapshots followed by unskipped snapshots records blanks',
 	beforeAndAfter,
 	{
@@ -58,7 +59,7 @@ test.serial(
 	}
 );
 
-test.serial(
+test(
 	'Filling in blanks doesn\'t require --update-snapshots',
 	beforeAndAfter,
 	{
